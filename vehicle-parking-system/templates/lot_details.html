@@ -1,0 +1,216 @@
+{% extends 'layouts/bootstrap.html' %}
+
+{% block title %}
+Lot Details - {{ lot.prime_location_name }}
+{% endblock %}
+
+{% block body %}
+{% include './BasicComponents/navbar.html' %}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Parking Lot Details</h1>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="alert alert-info">
+        {% for message in messages %}
+        {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Lot Information -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>{{ lot.prime_location_name }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Address:</strong> {{ lot.adress }}</p>
+                            <p><strong>Pin Code:</strong> {{ lot.pin_code }}</p>
+                            <p><strong>Price per Hour:</strong> ₹{{ lot.price }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Total Spots:</strong> {{ lot.maximum_number_of_spots }}</p>
+                            <p><strong>Available Spots:</strong> 
+                                <span class="badge bg-success">{{ spots|selectattr('status', 'equalto', 'A')|list|length }}</span>
+                            </p>
+                            <p><strong>Occupied Spots:</strong> 
+                                <span class="badge bg-danger">{{ spots|selectattr('status', 'equalto', 'O')|list|length }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spot Status Legend -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Status Legend:</h5>
+                    <div class="d-flex gap-4">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-success me-2">A</span>
+                            <span>Available</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-danger me-2">O</span>
+                            <span>Occupied</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parking Spots Grid -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Parking Spots ({{ spots|length }} spots)</h3>
+                </div>
+                <div class="card-body">
+                    {% if spots %}
+                    <div class="row g-3">
+                        {% for spot in spots %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 {% if spot.status == 'A' %}border-success{% else %}border-danger{% endif %}">
+                                <div class="card-header d-flex justify-content-between align-items-center 
+                                            {% if spot.status == 'A' %}bg-success text-white{% else %}bg-danger text-white{% endif %}">
+                                    <h6 class="mb-0">Spot ID: {{ spot.id }}</h6>
+                                    <span class="badge {% if spot.status == 'A' %}bg-light text-success{% else %}bg-light text-danger{% endif %}">
+                                        {{ spot.status }}
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    {% if spot.status == 'A' %}
+                                    <div class="text-center">
+                                        <i class="fas fa-car fa-3x text-success mb-3"></i>
+                                        <h5 class="text-success">Available</h5>
+                                        <p class="text-muted">This spot is ready for booking</p>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center mb-3">
+                                        <i class="fas fa-car fa-3x text-danger mb-3"></i>
+                                        <h5 class="text-danger">Occupied</h5>
+                                    </div>
+                                    
+                                    {% if spot.reservation %}
+                                    <div class="mt-3">
+                                        <h6 class="border-bottom pb-2 mb-3">Booking Details:</h6>
+                                        <div class="small">
+                                            <p class="mb-2">
+                                                <strong>User:</strong> {{ spot.reservation.user.name }}
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Email:</strong> {{ spot.reservation.user.email }}
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>User Address:</strong> {{ spot.reservation.user.adress }}
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Pin Code:</strong> {{ spot.reservation.user.pin_code }}
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Parked Since:</strong><br>
+                                                {{ spot.reservation.parking_timestamp.strftime('%Y-%m-%d at %H:%M') }}
+                                            </p>
+                                            <p class="mb-2">
+                                                <strong>Duration:</strong> 
+                                                <span class="text-info">Ongoing</span>
+                                            </p>
+                                            <p class="mb-0">
+                                                <strong>Estimated Cost:</strong> 
+                                                <span class="text-warning">
+                                                    ₹{{ lot.price }}/hour
+                                                </span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-warning">
+                                        <small>Occupied but reservation details not found</small>
+                                    </div>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-circle fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No parking spots found for this lot.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Statistics</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="card text-white bg-primary">
+                                <div class="card-body">
+                                    <h4>{{ spots|length }}</h4>
+                                    <small>Total Spots</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-success">
+                                <div class="card-body">
+                                    <h4>{{ spots|selectattr('status', 'equalto', 'A')|list|length }}</h4>
+                                    <small>Available</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-danger">
+                                <div class="card-body">
+                                    <h4>{{ spots|selectattr('status', 'equalto', 'O')|list|length }}</h4>
+                                    <small>Occupied</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-info">
+                                <div class="card-body">
+                                    <h4>{{ ((spots|selectattr('status', 'equalto', 'A')|list|length / spots|length) * 100) | round(1) if spots|length > 0 else 0 }}%</h4>
+                                    <small>Availability</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

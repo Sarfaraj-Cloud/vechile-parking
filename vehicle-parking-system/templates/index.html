@@ -1,0 +1,209 @@
+{% extends './layouts/bootstrap.html' %}
+
+{% block title %}SpotFinder - Smart Parking Solutions{% endblock %}
+
+{% block body %}
+{% include './BasicComponents/navbar.html' %}
+
+
+<section class="bg-primary text-white py-5" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 70%);">
+    <div class="container">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Smart Parking Made Simple</h1>
+                <p class="lead mb-4">Find, book, and manage your parking spots with ease. Our intelligent parking system helps you secure your vehicle parking in advance.</p>
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="{{ url_for('accessregister') }}" class="btn btn-light btn-lg px-4 me-md-2">Signup</a>
+                    <a href="{{ url_for('accesslogin') }}" class="btn btn-outline-light btn-lg px-4">Login</a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="bg-white bg-opacity-10 rounded-3 p-4 mt-4 mt-lg-0">
+                    <h3 class="mb-3">Live Stats</h3>
+                    <div class="row">
+                        <div class="col-6">
+                            <h2 class="text-warning">{{ total_lots }}</h2>
+                            <small>Parking Locations</small>
+                        </div>
+                        <div class="col-6">
+                            <h2 class="text-success">{{ available_spots }}</h2>
+                            <small>Available Spots</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold">Why Choose Our Parking System?</h2>
+                <p class="lead text-muted">Experience hassle-free parking with our advanced features</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="bg-primary bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-mobile-alt fa-2x text-primary"></i>
+                        </div>
+                        <h4>Easy Booking</h4>
+                        <p class="text-muted">Book parking spots instantly through our user-friendly platform. No more circling around looking for parking!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="bg-success bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-clock fa-2x text-success"></i>
+                        </div>
+                        <h4>Real-time Availability</h4>
+                        <p class="text-muted">Get live updates on parking spot availability. Know exactly what's available before you arrive.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body text-center p-4">
+                        <div class="bg-warning bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-shield-alt fa-2x text-warning"></i>
+                        </div>
+                        <h4>Secure Parking</h4>
+                        <p class="text-muted">All our parking locations are monitored and secure. Park with confidence knowing your vehicle is safe.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Available Locations Section -->
+{% if parking_lots %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold">Popular Parking Locations</h2>
+                <p class="lead text-muted">Discover our premium parking spots across the city</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for lot in parking_lots[:6] %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ lot.prime_location_name }}</h5>
+                        <p class="card-text text-muted">{{ lot.adress }}</p>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-success">{{ lot.available_count }} Available</span>
+                            <strong class="text-primary">₹{{ lot.price }}/hour</strong>
+                        </div>
+                        <div class="progress mb-2" style="height: 8px;">
+                            {% set occupancy_rate = (lot.occupied_count / lot.maximum_number_of_spots * 100) if lot.maximum_number_of_spots > 0 else 0 %}
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ 100 - occupancy_rate }}%" 
+                                 aria-valuenow="{{ 100 - occupancy_rate }}" 
+                                 aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <small class="text-muted">{{ lot.maximum_number_of_spots }} total spots</small>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        {% if lot.available_count > 0 %}
+                        <a href="{{ url_for('accessregister') }}" class="btn btn-primary w-100">Register to Book</a>
+                        {% else %}
+                        <button class="btn btn-secondary w-100" disabled>Fully Occupied</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if parking_lots|length > 6 %}
+        <div class="text-center mt-4">
+            <a href="{{ url_for('accessregister') }}" class="btn btn-outline-primary btn-lg">View All Locations</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<!-- How It Works Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold">How It Works</h2>
+                <p class="lead text-muted">Simple steps to secure your parking spot</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3 text-center">
+                <div class="bg-primary bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                    <span class="display-6 fw-bold text-primary">1</span>
+                </div>
+                <h4>Register</h4>
+                <p class="text-muted">Create your account in seconds</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="bg-primary bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                    <span class="display-6 fw-bold text-primary">2</span>
+                </div>
+                <h4>Choose Location</h4>
+                <p class="text-muted">Select from available parking spots</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="bg-primary bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                    <span class="display-6 fw-bold text-primary">3</span>
+                </div>
+                <h4>Book Instantly</h4>
+                <p class="text-muted">Confirm your parking reservation</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="bg-primary bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                    <span class="display-6 fw-bold text-primary">4</span>
+                </div>
+                <h4>Park & Go</h4>
+                <p class="text-muted">Arrive and park with confidence</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold mb-4">Ready to Park Smart?</h2>
+                <p class="lead mb-4">Join thousands of satisfied customers who have made parking hassle-free with our platform.</p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="{{ url_for('accessregister') }}" class="btn btn-light btn-lg px-5 me-md-2">Start Parking Today</a>
+                    <a href="{{ url_for('accesslogin') }}" class="btn btn-outline-light btn-lg px-5">Already a Member?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-4 bg-dark text-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>SpotFinder</h5>
+                <p class="text-white">Making parking simple, secure, and smart.</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <small class="text-shade">&copy; 2025 SpotFinder. All rights reserved.</small>
+            </div>
+        </div>
+    </div>
+</footer>
+
+{% endblock %}
